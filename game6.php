@@ -10,7 +10,6 @@ if (!isset($_SESSION['health'])) {
     $_SESSION['health'] = 100;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -166,44 +165,84 @@ if (!isset($_SESSION['health'])) {
 
         .game-field {
             width: 70%;
-            background: linear-gradient(45deg, #9b59b6 0%, #8e44ad 100%);
+            background: linear-gradient(45deg, #4a90e2 0%, #357abd 100%);
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 3px solid #000;
+            border: 3px solid #2c5282;
             border-radius: 15px;
             box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
 
         .field {
             width: 80%;
             height: 80%;
-            background: linear-gradient(45deg, #2c1654, #4a1942);
-            border: 2px solid #000;
+            background: linear-gradient(135deg, #424242, #303030);
+            border: 2px solid #616161;
             position: relative;
             border-radius: 15px;
             box-shadow: 
-                0 0 30px rgba(0, 0, 0, 0.2),
-                inset 0 0 100px rgba(255, 255, 255, 0.1);
+                0 0 30px rgba(48, 48, 48, 0.3),
+                inset 0 0 100px rgba(255, 255, 255, 0.05);
             overflow: hidden;
+            animation: fieldPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes fieldPulse {
+            0% { 
+                box-shadow: 0 0 30px rgba(48, 48, 48, 0.3), 
+                           inset 0 0 100px rgba(255, 255, 255, 0.05);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 50px rgba(48, 48, 48, 0.5), 
+                           inset 0 0 120px rgba(255, 255, 255, 0.08);
+                transform: scale(1.02);
+            }
+            100% { 
+                box-shadow: 0 0 30px rgba(48, 48, 48, 0.3), 
+                           inset 0 0 100px rgba(255, 255, 255, 0.05);
+                transform: scale(1);
+            }
         }
 
         .field::before {
             content: '';
             position: absolute;
-            width: 200%;
-            height: 200%;
             top: -50%;
             left: -50%;
-            background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.8) 100%),
-                        url('data:image/svg+xml,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
-            animation: bgMove 20s linear infinite;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%);
+            animation: rotate 10s linear infinite;
         }
 
-        @keyframes bgMove {
+        @keyframes rotate {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
+        }
+
+        .field::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 300%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                rgba(255,255,255,0) 0%,
+                rgba(255,255,255,0.08) 50%,
+                rgba(255,255,255,0) 100%);
+            transform: skewX(-45deg);
+            animation: shine 6s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) skewX(-45deg); }
+            50% { transform: translateX(100%) skewX(-45deg); }
+            100% { transform: translateX(-100%) skewX(-45deg); }
         }
 
         .obstacle {
@@ -349,6 +388,61 @@ if (!isset($_SESSION['health'])) {
             color: white;
             box-shadow: 0 2px 4px rgba(229, 62, 62, 0.3);
         }
+
+        .field::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 300%;
+            height: 200%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: waveEffect 8s linear infinite;
+        }
+
+        @keyframes waveEffect {
+            0% { transform: rotate(45deg) translate(-50%, -50%); }
+            100% { transform: rotate(45deg) translate(50%, 50%); }
+        }
+
+        .ball {
+            width: 40px;
+            height: 40px;
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+            animation: floatBall 2s ease-in-out infinite;
+        }
+
+        @keyframes floatBall {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+
+        .box {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            bottom: 10%;
+            right: 10%;
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4));
+            animation: glowBox 2s ease-in-out infinite;
+        }
+
+        @keyframes glowBox {
+            0% { filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4)); }
+            50% { filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.6)); }
+            100% { filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4)); }
+        }
     </style>
 </head>
 <body>
@@ -428,13 +522,12 @@ if (!isset($_SESSION['health'])) {
             );
 
             if (distance < 50) {
-                result.textContent = 'ยินดีด้วย! คุณผ่านทุกด่านแล้ว! 🎉🎊';
+                result.textContent = 'ยินดีด้วย! คุณผ่านด่านที่ 6 แล้ว!';
                 result.className = 'success';
                 ball.classList.add('bounce');
                 setTimeout(() => {
                     ball.classList.remove('bounce');
-                    alert('ยินดีด้วย! คุณช่วยลูกบอลไปถึงกล่องได้สำเร็จ! 🎮');
-                    window.location.href = 'index.php';
+                    window.location.href = 'game7.php';
                 }, 1000);
             } else {
                 // ลด Health 5% เมื่อตอบผิด
@@ -464,7 +557,7 @@ if (!isset($_SESSION['health'])) {
                         }
                     });
 
-                result.textContent = 'ยังไม่ถูกต้อง ลองอีกครั้ง! 💪';
+                result.textContent = 'ยังไม่ถูกต้อง ลองอีกครั้ง! ';
                 result.className = 'error';
             }
         });

@@ -10,7 +10,6 @@ if (!isset($_SESSION['health'])) {
     $_SESSION['health'] = 100;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -166,7 +165,7 @@ if (!isset($_SESSION['health'])) {
 
         .game-field {
             width: 70%;
-            background: linear-gradient(45deg, #9b59b6 0%, #8e44ad 100%);
+            background: linear-gradient(45deg, #28a745 0%, #20c997 100%);
             position: relative;
             display: flex;
             align-items: center;
@@ -179,27 +178,70 @@ if (!isset($_SESSION['health'])) {
         .field {
             width: 80%;
             height: 80%;
-            background: linear-gradient(to bottom, #a569bd, #8e44ad);
-            border: 2px solid #000;
+            background: linear-gradient(135deg, #424242, #303030);
+            border: 2px solid #616161;
             position: relative;
             border-radius: 15px;
             box-shadow: 
-                0 0 30px rgba(0, 0, 0, 0.2),
-                inset 0 0 100px rgba(255, 255, 255, 0.1);
+                0 0 30px rgba(48, 48, 48, 0.3),
+                inset 0 0 100px rgba(255, 255, 255, 0.05);
             overflow: hidden;
+            animation: fieldPulse 3s ease-in-out infinite;
         }
 
-        @keyframes treeWiggle {
-            0% { transform: rotate(0deg) scale(1); }
-            25% { transform: rotate(-5deg) scale(1.1); }
-            75% { transform: rotate(5deg) scale(1.1); }
-            100% { transform: rotate(0deg) scale(1); }
+        @keyframes fieldPulse {
+            0% { 
+                box-shadow: 0 0 30px rgba(48, 48, 48, 0.3), 
+                           inset 0 0 100px rgba(255, 255, 255, 0.05);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 50px rgba(48, 48, 48, 0.5), 
+                           inset 0 0 120px rgba(255, 255, 255, 0.08);
+                transform: scale(1.02);
+            }
+            100% { 
+                box-shadow: 0 0 30px rgba(48, 48, 48, 0.3), 
+                           inset 0 0 100px rgba(255, 255, 255, 0.05);
+                transform: scale(1);
+            }
         }
 
-        @keyframes treeMove {
-            0% { transform: translate(0, 0); }
-            50% { transform: translate(3px, 3px); }
-            100% { transform: translate(0, 0); }
+        .field::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%);
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .field::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 300%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                rgba(255,255,255,0) 0%,
+                rgba(255,255,255,0.08) 50%,
+                rgba(255,255,255,0) 100%);
+            transform: skewX(-45deg);
+            animation: shine 6s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) skewX(-45deg); }
+            50% { transform: translateX(100%) skewX(-45deg); }
+            100% { transform: translateX(-100%) skewX(-45deg); }
         }
 
         .knight {
