@@ -4,11 +4,6 @@ if (!isset($_SESSION['username'])) {
     header("Location: login.php");
     exit;
 }
-
-// ตรวจสอบว่ามี health หรือไม่
-if (!isset($_SESSION['health'])) {
-    $_SESSION['health'] = 100;
-}
 ?>
 
 <!DOCTYPE html>
@@ -16,7 +11,7 @@ if (!isset($_SESSION['health'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSS Adventure Game - Level 2</title>
+    <title>CSS Adventure Game - Level 5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -204,8 +199,8 @@ if (!isset($_SESSION['health'])) {
 
         .knight {
             position: absolute;
-            top: 5%;
-            left: 80%;
+            top: 10%;
+            left: 10%;
             width: 50px;
             height: auto;
             transition: all 0.5s ease;
@@ -220,8 +215,8 @@ if (!isset($_SESSION['health'])) {
 
         .apple {
             position: absolute;
-            top: 85%;
-            left: 10%;
+            top: 90%;
+            left: 90%;
             width: 40px;
             height: auto;
             filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
@@ -229,13 +224,31 @@ if (!isset($_SESSION['health'])) {
 
         .obstacle {
             position: absolute;
+            background: linear-gradient(90deg, #2d3748, #1a202c);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .obstacle-1 {
             width: 60%;
             height: 20px;
-            background: linear-gradient(90deg, #2d3748, #1a202c);
             left: 20%;
-            top: 50%;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            top: 30%;
+            transform: rotate(45deg);
+        }
+
+        .obstacle-2 {
+            width: 60%;
+            height: 20px;
+            left: 20%;
+            top: 60%;
+            transform: rotate(-45deg);
+        }
+
+        .obstacle-3 {
+            width: 20px;
+            height: 60%;
+            left: 50%;
+            top: 20%;
         }
 
         #result {
@@ -263,16 +276,17 @@ if (!isset($_SESSION['health'])) {
 <body>
     <div class="game-container">
         <div class="game-info">
-            <div class="level-badge">LEVEL 2</div>
-            <h2>Advanced Position</h2>
+            <div class="level-badge">LEVEL 5</div>
+            <h2>Transform Expert</h2>
             <p>Heroes' health:</p>
             <div class="health-bar">
                 <div class="health-text"><?php echo $_SESSION['health']; ?>%</div>
                 <div class="health" style="width: <?php echo $_SESSION['health']; ?>%;"></div>
             </div>
             <p>
-                เยี่ยมมาก! แต่ตอนนี้มีกำแพงขวางอยู่! 
-                เราต้องใช้คำสั่ง CSS ที่ซับซ้อนขึ้นเพื่อพาต้นไม้อ้อมกำแพงไปหาน้ำ
+                ด่านสุดท้าย! ต้นไม้กำลังจะตายแล้ว! 
+                เราต้องใช้ทั้ง transform และ position 
+                เพื่อพาต้นไม้ผ่านกำแพงที่ซับซ้อนไปหาน้ำให้ได้!
             </p>
             <div class="css-editor">
                 <div class="editor-header">
@@ -290,7 +304,9 @@ if (!isset($_SESSION['health'])) {
 
         <div class="game-field">
             <div id="field" class="field">
-                <div class="obstacle"></div>
+                <div class="obstacle obstacle-1"></div>
+                <div class="obstacle obstacle-2"></div>
+                <div class="obstacle obstacle-3"></div>
                 <img src="tree.png" alt="Tree" class="knight" id="tree">
                 <img src="water.png" alt="Water" class="apple">
             </div>
@@ -302,11 +318,21 @@ if (!isset($_SESSION['health'])) {
             const cssInput = this.value;
             const tree = document.getElementById('tree');
 
-            try {
-                tree.style.cssText = cssInput;
-            } catch (error) {
-                console.error('Invalid CSS:', error);
-            }
+            // แยกคำสั่ง CSS เป็นบรรทัด
+            const cssLines = cssInput.split(';');
+            
+            // ประมวลผลแต่ละบรรทัด
+            cssLines.forEach(line => {
+                const [property, value] = line.split(':').map(str => str.trim());
+                if (property && value) {
+                    try {
+                        // กำหนดค่า style ตามที่ผู้เล่นใส่
+                        tree.style[property] = value;
+                    } catch (error) {
+                        console.error('Invalid CSS:', error);
+                    }
+                }
+            });
         });
 
         document.getElementById('check-answer').addEventListener('click', function() {
@@ -317,47 +343,22 @@ if (!isset($_SESSION['health'])) {
             const treeRect = tree.getBoundingClientRect();
             const waterRect = water.getBoundingClientRect();
 
-            if (
-                treeRect.right >= waterRect.left &&
-                treeRect.left <= waterRect.right &&
-                treeRect.bottom >= waterRect.top &&
-                treeRect.top <= waterRect.bottom
-            ) {
-                result.textContent = '🎉 เยี่ยมมาก! ต้นไม้ถึงน้ำแล้ว!';
-                result.className = 'success';
-                setTimeout(() => {
-                    window.location.href = 'game3.php';
-                }, 1500);
-            } else {
-                // ลด Health 5% เมื่อตอบผิด
-                fetch('update_health.php?decrease=5')
-                    .then(response => response.json())
-                    .then(data => {
-                        const newHealth = data.health;
-                        const healthBar = document.querySelector('.health');
-                        const healthText = document.querySelector('.health-text');
-                        
-                        // อัพเดท health bar แบบ realtime
-                        healthBar.style.width = newHealth + '%';
-                        healthText.textContent = newHealth + '%';
-                        
-                        // เปลี่ยนสีตามระดับ health
-                        if (newHealth <= 20) {
-                            healthBar.style.background = 'linear-gradient(90deg, #ff0000, #cc0000)';
-                        } else if (newHealth <= 50) {
-                            healthBar.style.background = 'linear-gradient(90deg, #ffa500, #ff8c00)';
-                        } else {
-                            healthBar.style.background = 'linear-gradient(90deg, #ff6b6b, #ee5253)';
-                        }
-                        
-                        // ถ้าเพิ่งรีเซ็ต health (Game Over)
-                        if (data.gameOver) {
-                            alert('Game Over! เริ่มเกมใหม่');
-                            window.location.href = 'index.php';
-                            return;
-                        }
-                    });
+            const distance = Math.sqrt(
+                Math.pow(treeRect.left - waterRect.left, 2) +
+                Math.pow(treeRect.top - waterRect.top, 2)
+            );
 
+            if (distance < 50) {
+                result.textContent = 'ยินดีด้วย! คุณผ่านทุกด่านแล้ว! 🎉🎊';
+                result.className = 'success';
+                tree.classList.add('wiggle');
+                setTimeout(() => {
+                    tree.classList.remove('wiggle');
+                    // แสดงหน้าจบเกม หรือรีเซ็ตเกมใหม่
+                    alert('ยินดีด้วย! คุณช่วยต้นไม้สำเร็จแล้ว! 🌳');
+                    window.location.href = 'index.php';
+                }, 1000);
+            } else {
                 result.textContent = 'ยังไม่ถูกต้อง ลองอีกครั้ง! 💪';
                 result.className = 'error';
             }

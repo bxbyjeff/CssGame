@@ -73,8 +73,21 @@ if (!isset($_SESSION['username'])) {
         .health {
             height: 100%;
             background: linear-gradient(90deg, #ff6b6b, #ee5253);
-            transition: width 0.5s ease;
+            transition: width 0.5s ease-in-out;
             box-shadow: 0 0 10px rgba(238, 82, 83, 0.5);
+            position: relative;
+        }
+
+        .health-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+            line-height: 20px;
+            font-size: 12px;
         }
 
         .css-editor {
@@ -321,9 +334,9 @@ if (!isset($_SESSION['username'])) {
             <h2>Flexbox Master</h2>
             <p>Heroes' health:</p>
             <div class="health-bar">
-                <div class="health" style="width: 20%;"></div>
+                <div class="health-text"><?php echo $_SESSION['health']; ?>%</div>
+                <div class="health" style="width: <?php echo $_SESSION['health']; ?>%;"></div>
             </div>
-            <p>20/100 ❤️</p>
             
             <div class="challenge-text">
                 <p>
