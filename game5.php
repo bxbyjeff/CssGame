@@ -205,6 +205,7 @@ if (!isset($_SESSION['level'])) {
             }
         } catch (error) {
             document.getElementById('result').textContent = 'Invalid CSS!';
+            document.getElementById('result').textContent = 'Invalid ่!';
         }
     });
     </script>
