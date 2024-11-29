@@ -12,10 +12,10 @@ if (!isset($_SESSION['username'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSS Adventure Game - Level 2</title>
-    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
             background-color: #2b2a4d;
@@ -36,6 +36,9 @@ if (!isset($_SESSION['username'])) {
 
         .game-info h2 {
             text-align: center;
+            color: #9f7aea;
+            font-size: 24px;
+            margin-bottom: 20px;
         }
 
         .health-bar {
@@ -50,38 +53,45 @@ if (!isset($_SESSION['username'])) {
 
         .health {
             height: 100%;
-            background-color: red;
+            background-color: #e53e3e;
+            transition: width 0.3s ease;
         }
 
         .css-editor {
             margin-top: 20px;
+            background-color: #2d3748;
+            padding: 15px;
+            border-radius: 8px;
         }
 
         textarea {
             width: 100%;
-            height: 80px;
-            background-color: #272640;
+            height: 100px;
+            background-color: #1a202c;
             color: #fff;
-            border: 1px solid #444;
+            border: 1px solid #4a5568;
             padding: 10px;
             font-family: monospace;
             font-size: 16px;
             border-radius: 5px;
+            margin: 10px 0;
         }
 
         button {
             background-color: #6f42c1;
             color: #fff;
-            padding: 10px;
+            padding: 12px;
             border: none;
             margin-top: 10px;
             cursor: pointer;
             border-radius: 5px;
             width: 100%;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
-            background-color: #563d7c;
+            background-color: #553c9a;
         }
 
         .game-field {
@@ -97,8 +107,10 @@ if (!isset($_SESSION['username'])) {
             width: 80%;
             height: 80%;
             background-color: #6e7b52;
-            border: 2px solid #000;
+            border: 2px solid #2d3748;
             position: relative;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .knight {
@@ -107,6 +119,7 @@ if (!isset($_SESSION['username'])) {
             left: 80%;
             width: 50px;
             height: auto;
+            transition: all 0.3s ease;
         }
 
         .apple {
@@ -116,11 +129,38 @@ if (!isset($_SESSION['username'])) {
             width: 40px;
             height: auto;
         }
+
+        #result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .success {
+            background-color: #48bb78;
+            color: white;
+        }
+
+        .error {
+            background-color: #e53e3e;
+            color: white;
+        }
+
+        .obstacle {
+            position: absolute;
+            width: 60%;
+            height: 20px;
+            background-color: #2d3748;
+            left: 20%;
+            top: 50%;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
     <div class="game-container">
-        <!-- Game Info Section -->
         <div class="game-info">
             <h2>Level 2</h2>
             <p>Heroes' health:</p>
@@ -129,35 +169,44 @@ if (!isset($_SESSION['username'])) {
             </div>
             <p>30/100 ❤️</p>
             <p>
-                Arthur has traveled far, but the journey has become harder. The evil brothers have set traps! 
-                Help Arthur navigate the tricky terrain to reach the water source.
+                เยี่ยมมาก! แต่ตอนนี้มีกำแพงขวางอยู่! 
+                เราต้องใช้คำสั่ง CSS ที่ซับซ้อนขึ้นเพื่อพาต้นไม้อ้อมกำแพงไปหาน้ำ
             </p>
             <div class="css-editor">
-                <pre>#field {</pre>
-                <textarea id="css-input" placeholder="Type your answer here..."></textarea>
+                <pre>#tree {</pre>
+                <textarea id="css-input" placeholder="ใส่คำสั่ง CSS ตรงนี้..."></textarea>
                 <pre>}</pre>
-                <button id="check-answer">Check Answer</button>
-                <p id="result"></p> <!-- Display results -->
+                <button id="check-answer">ตรวจคำตอบ</button>
+                <div id="result"></div>
             </div>
         </div>
 
-        <!-- Game Field Section -->
         <div class="game-field">
             <div id="field" class="field">
-                <!-- Knight (Tree) and Apple (Water) -->
-                <img src="tree.png" alt="Tree" class="knight">
+                <div class="obstacle"></div>
+                <img src="tree.png" alt="Tree" class="knight" id="tree">
                 <img src="water.png" alt="Water" class="apple">
             </div>
         </div>
     </div>
-    <script>
-    document.getElementById('check-answer').addEventListener('click', () => {
-        const cssInput = document.getElementById('css-input').value;
-        const tree = document.querySelector('.knight');
-        const water = document.querySelector('.apple');
 
-        try {
-            tree.style.cssText += cssInput;
+    <script>
+        document.getElementById('css-input').addEventListener('input', function() {
+            const cssInput = this.value;
+            const tree = document.getElementById('tree');
+
+            try {
+                tree.style.cssText = cssInput;
+            } catch (error) {
+                console.error('Invalid CSS:', error);
+            }
+        });
+
+        document.getElementById('check-answer').addEventListener('click', function() {
+            const tree = document.getElementById('tree');
+            const water = document.querySelector('.apple');
+            const result = document.getElementById('result');
+
             const treeRect = tree.getBoundingClientRect();
             const waterRect = water.getBoundingClientRect();
 
@@ -167,14 +216,16 @@ if (!isset($_SESSION['username'])) {
                 treeRect.bottom >= waterRect.top &&
                 treeRect.top <= waterRect.bottom
             ) {
-                document.getElementById('result').textContent = 'Success! Arthur reached the water!';
+                result.textContent = '🎉 เยี่ยมมาก! ต้นไม้ถึงน้ำแล้ว!';
+                result.className = 'success';
+                setTimeout(() => {
+                    window.location.href = 'game3.php';
+                }, 1500);
             } else {
-                document.getElementById('result').textContent = 'Not yet! Try adjusting your CSS!';
+                result.textContent = '❌ ยังไม่ถึง! ลองปรับคำสั่ง CSS อีกครั้ง';
+                result.className = 'error';
             }
-        } catch (error) {
-            document.getElementById('result').textContent = 'Invalid CSS!';
-        }
-    });
+        });
     </script>
 </body>
 </html>
