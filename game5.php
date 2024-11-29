@@ -5,7 +5,6 @@ if (!isset($_SESSION['username'])) {
     exit;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -161,7 +160,7 @@ if (!isset($_SESSION['username'])) {
 
         .game-field {
             width: 70%;
-            background: linear-gradient(45deg, #9b59b6 0%, #8e44ad 100%);
+            background: linear-gradient(45deg, #28a745 0%, #20c997 100%);
             position: relative;
             display: flex;
             align-items: center;
@@ -174,27 +173,95 @@ if (!isset($_SESSION['username'])) {
         .field {
             width: 80%;
             height: 80%;
-            background: linear-gradient(to bottom, #a569bd, #8e44ad);
-            border: 2px solid #000;
+            background: linear-gradient(135deg, #424242, #303030);
+            border: 2px solid #616161;
             position: relative;
             border-radius: 15px;
             box-shadow: 
-                0 0 30px rgba(0, 0, 0, 0.2),
-                inset 0 0 100px rgba(255, 255, 255, 0.1);
+                0 0 30px rgba(48, 48, 48, 0.3),
+                inset 0 0 100px rgba(255, 255, 255, 0.05);
             overflow: hidden;
+            animation: fieldPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes fieldPulse {
+            0% { 
+                box-shadow: 0 0 30px rgba(48, 48, 48, 0.3), 
+                           inset 0 0 100px rgba(255, 255, 255, 0.05);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 50px rgba(48, 48, 48, 0.5), 
+                           inset 0 0 120px rgba(255, 255, 255, 0.08);
+                transform: scale(1.02);
+            }
+            100% { 
+                box-shadow: 0 0 30px rgba(48, 48, 48, 0.3), 
+                           inset 0 0 100px rgba(255, 255, 255, 0.05);
+                transform: scale(1);
+            }
+        }
+
+        .field::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%);
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .field::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 300%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                rgba(255,255,255,0) 0%,
+                rgba(255,255,255,0.08) 50%,
+                rgba(255,255,255,0) 100%);
+            transform: skewX(-45deg);
+            animation: shine 6s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) skewX(-45deg); }
+            50% { transform: translateX(100%) skewX(-45deg); }
+            100% { transform: translateX(-100%) skewX(-45deg); }
+        }
+
+        .tree {
+            width: 50px;  
+            height: 50px;  
+            position: absolute;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 0 10px rgba(29, 74, 44, 0.5));
+        }
+
+        .tree.wiggle {
+            animation: treeWiggle 0.5s ease-in-out, treePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes treePulse {
+            0% { filter: drop-shadow(0 0 10px rgba(29, 74, 44, 0.5)); }
+            50% { filter: drop-shadow(0 0 20px rgba(46, 204, 113, 0.8)); }
+            100% { filter: drop-shadow(0 0 10px rgba(29, 74, 44, 0.5)); }
         }
 
         @keyframes treeWiggle {
-            0% { transform: rotate(0deg) scale(1); }
-            25% { transform: rotate(-5deg) scale(1.1); }
-            75% { transform: rotate(5deg) scale(1.1); }
-            100% { transform: rotate(0deg) scale(1); }
-        }
-
-        @keyframes treeMove {
-            0% { transform: translate(0, 0); }
-            50% { transform: translate(3px, 3px); }
-            100% { transform: translate(0, 0); }
+            0% { transform: rotate(0deg) scale(1); filter: brightness(1); }
+            25% { transform: rotate(-5deg) scale(1.1); filter: brightness(1.2); }
+            75% { transform: rotate(5deg) scale(1.1); filter: brightness(1.2); }
+            100% { transform: rotate(0deg) scale(1); filter: brightness(1); }
         }
 
         .knight {
@@ -307,7 +374,7 @@ if (!isset($_SESSION['username'])) {
                 <div class="obstacle obstacle-1"></div>
                 <div class="obstacle obstacle-2"></div>
                 <div class="obstacle obstacle-3"></div>
-                <img src="tree.png" alt="Tree" class="knight" id="tree">
+                <img src="tree.png" alt="Tree" class="tree" id="tree">
                 <img src="water.png" alt="Water" class="apple">
             </div>
         </div>
@@ -349,17 +416,17 @@ if (!isset($_SESSION['username'])) {
             );
 
             if (distance < 50) {
-                result.textContent = 'ยินดีด้วย! คุณผ่านทุกด่านแล้ว! 🎉🎊';
+                result.textContent = 'ยินดีด้วย! คุณผ่านทุกด่านแล้ว! ';
                 result.className = 'success';
                 tree.classList.add('wiggle');
                 setTimeout(() => {
                     tree.classList.remove('wiggle');
-                    // แสดงหน้าจบเกม หรือรีเซ็ตเกมใหม่
-                    alert('ยินดีด้วย! คุณช่วยต้นไม้สำเร็จแล้ว! 🌳');
-                    window.location.href = 'index.php';
+                    // ไปด่านที่ 6
+                    alert('ยินดีด้วย! คุณช่วยต้นไม้สำเร็จแล้ว! ไปด่านต่อไปกัน!');
+                    window.location.href = 'game6.php';
                 }, 1000);
             } else {
-                result.textContent = 'ยังไม่ถูกต้อง ลองอีกครั้ง! 💪';
+                result.textContent = 'ยังไม่ถูกต้อง ลองอีกครั้ง! ';
                 result.className = 'error';
             }
         });
