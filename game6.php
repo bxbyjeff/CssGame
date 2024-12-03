@@ -485,81 +485,92 @@ if (!isset($_SESSION['health'])) {
     </div>
 
     <script>
-        document.getElementById('css-input').addEventListener('input', function() {
-            const cssInput = this.value;
+        function applyCSS(cssInput) {
             const ball = document.getElementById('ball');
-
-            // แยกคำสั่ง CSS เป็นบรรทัด
-            const cssLines = cssInput.split(';');
-            
-            // ประมวลผลแต่ละบรรทัด
-            cssLines.forEach(line => {
-                const [property, value] = line.split(':').map(str => str.trim());
-                if (property && value) {
-                    try {
-                        // กำหนดค่า style ตามที่ผู้เล่นใส่
-                        ball.style[property] = value;
-                    } catch (error) {
-                        console.error('Invalid CSS:', error);
-                    }
-                }
-            });
-        });
-
-        document.getElementById('check-answer').addEventListener('click', function() {
-            const ball = document.getElementById('ball');
-            const box = document.querySelector('.box');
             const result = document.getElementById('result');
             const healthBar = document.querySelector('.health');
             const healthText = document.querySelector('.health-text');
+            
+            try {
+                const match = cssInput.match(/transform\s*:\s*([^;]+)/);
+                if (!match) {
+                    throw new Error('No transform property found');
+                }
+                
+                ball.style.transform = match[1];
+                
+                const ballRect = ball.getBoundingClientRect();
+                const targetRect = document.querySelector('.box').getBoundingClientRect();
+                
+                const centerBall = {
+                    x: ballRect.left + ballRect.width / 2,
+                    y: ballRect.top + ballRect.height / 2
+                };
+                
+                const centerTarget = {
+                    x: targetRect.left + targetRect.width / 2,
+                    y: targetRect.top + targetRect.height / 2
+                };
+                
+                const distance = Math.sqrt(
+                    Math.pow(centerBall.x - centerTarget.x, 2) + 
+                    Math.pow(centerBall.y - centerTarget.y, 2)
+                );
+                
+                const obstacles = document.querySelectorAll('.obstacle');
+                let collision = false;
+                
+                obstacles.forEach(obstacle => {
+                    const obstacleRect = obstacle.getBoundingClientRect();
+                    if (!(ballRect.right < obstacleRect.left || 
+                          ballRect.left > obstacleRect.right || 
+                          ballRect.bottom < obstacleRect.top || 
+                          ballRect.top > obstacleRect.bottom)) {
+                        collision = true;
+                    }
+                });
 
-            const ballRect = ball.getBoundingClientRect();
-            const boxRect = box.getBoundingClientRect();
-
-            const distance = Math.sqrt(
-                Math.pow(ballRect.left - boxRect.left, 2) +
-                Math.pow(ballRect.top - boxRect.top, 2)
-            );
-
-            if (distance < 50) {
-                result.textContent = 'ยินดีด้วย! คุณผ่านด่านที่ 6 แล้ว!';
-                result.className = 'success';
-                ball.classList.add('bounce');
-                setTimeout(() => {
-                    ball.classList.remove('bounce');
-                    window.location.href = 'game7.php';
-                }, 1000);
-            } else {
-                // ลด Health 5% เมื่อตอบผิด
-                fetch('update_health.php?decrease=5')
-                    .then(response => response.json())
-                    .then(data => {
-                        const newHealth = data.health;
-                        
-                        // อัพเดท health bar แบบ realtime
-                        healthBar.style.width = newHealth + '%';
-                        healthText.textContent = newHealth + '%';
-                        
-                        // เปลี่ยนสีตามระดับ health
-                        if (newHealth <= 20) {
-                            healthBar.style.background = 'linear-gradient(90deg, #ff0000, #cc0000)';
-                        } else if (newHealth <= 50) {
-                            healthBar.style.background = 'linear-gradient(90deg, #ffa500, #ff8c00)';
-                        } else {
-                            healthBar.style.background = 'linear-gradient(90deg, #ff6b6b, #ee5253)';
-                        }
-                        
-                        // ถ้าเพิ่งรีเซ็ต health (Game Over)
-                        if (data.gameOver) {
-                            alert('Game Over! เริ่มเกมใหม่');
-                            window.location.href = 'index.php';
-                            return;
-                        }
-                    });
-
-                result.textContent = 'ยังไม่ถูกต้อง ลองอีกครั้ง! ';
-                result.className = 'error';
+                if (collision) {
+                    result.innerHTML = '<p style="color: #e74c3c;">ชนกำแพง! ลองใหม่อีกครั้ง</p>';
+                    fetch('update_health.php?damage=10')
+                        .then(response => response.text())
+                        .then(health => {
+                            healthBar.style.width = health + '%';
+                            healthText.textContent = health + '%';
+                            if (health <= 0) {
+                                alert('เลือดหมด! เริ่มเกมใหม่');
+                                window.location.href = 'game1.php';
+                            }
+                        });
+                    return;
+                }
+                
+                if (distance < 50) {
+                    result.innerHTML = '<p style="color: #2ecc71;">ยินดีด้วย! ผ่านด่านที่ 6 แล้ว!</p>';
+                    setTimeout(() => {
+                        window.location.href = 'game7.php';
+                    }, 1000);
+                } else {
+                    result.innerHTML = '<p style="color: #e74c3c;">ยังไม่ถึงเป้าหมาย ลองใหม่อีกครั้ง</p>';
+                    fetch('update_health.php?damage=10')
+                        .then(response => response.text())
+                        .then(health => {
+                            healthBar.style.width = health + '%';
+                            healthText.textContent = health + '%';
+                            if (health <= 0) {
+                                alert('เลือดหมด! เริ่มเกมใหม่');
+                                window.location.href = 'game1.php';
+                            }
+                        });
+                }
+            } catch (error) {
+                result.innerHTML = '<p style="color: #e74c3c;">คำสั่ง CSS ไม่ถูกต้อง ลองใหม่อีกครั้ง</p>';
             }
+        }
+
+        document.getElementById('check-answer').addEventListener('click', function() {
+            const cssInput = document.getElementById('css-input').value;
+            applyCSS(cssInput);
         });
     </script>
 </body>
